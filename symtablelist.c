@@ -129,18 +129,19 @@ int SymTable_put(SymTable_T oSymTable,
 void *SymTable_replace(SymTable_T oSymTable,
      const char *pcKey, const void *pvValue) { 
     struct SymTableNode *psCurrentNode;
-    struct SymTableNode *psNextNode;
 
     assert(oSymTable != NULL);
+    assert(pcKey != NULL);
 
     for (psCurrentNode = oSymTable->psFirstNode;
         psCurrentNode != NULL;
-        psCurrentNode = psNextNode)
+        psCurrentNode =psCurrentNode->psNextNode)
     {
-      psNextNode = psCurrentNode->psNextNode;
+        if(strcmp(pcKey,psCurrentNode->pcKey) == 0) {
+            return (void*)psCurrentNode -> pvValue;
+        }
     }
-
-    return NULL;
+    return NULL; /*Does not find the pcKey */
 }  
 
 
