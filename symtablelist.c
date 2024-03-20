@@ -116,7 +116,7 @@ int SymTable_put(SymTable_T oSymTable,
     psNewNode->pcKey = strcpy((char*)psNewNode->pcKey, pcKey);
     psNewNode->pvValue = pvValue;
 
-    psNewNode = oSymTable->psFirstNode;
+    psNewNode->psNextNode = oSymTable->psFirstNode;
     oSymTable->psFirstNode = psNewNode;
     oSymTable->numBindings++;
     return 1; /*Successfully inserted a new node*/
