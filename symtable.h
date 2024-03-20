@@ -5,6 +5,7 @@
 
 #ifndef SymTable_INCLUDED
 #define SymTable_INCLUDED
+#include <stddef.h>
 
 /* A SymTable_T is a last-in-first-out collection of items. */
 
