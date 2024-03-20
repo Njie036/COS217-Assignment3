@@ -129,6 +129,8 @@ int SymTable_put(SymTable_T oSymTable,
 void *SymTable_replace(SymTable_T oSymTable,
      const char *pcKey, const void *pvValue) { 
     struct SymTableNode *psCurrentNode;
+    const void *oldValue;
+
 
     assert(oSymTable != NULL);
     assert(pcKey != NULL);
@@ -138,7 +140,10 @@ void *SymTable_replace(SymTable_T oSymTable,
         psCurrentNode =psCurrentNode->psNextNode)
     {
         if(strcmp(pcKey,psCurrentNode->pcKey) == 0) {
-            return (void*)psCurrentNode -> pvValue;
+            oldValue = psCurrentNode->pcKey;
+            psCurrentNode = pvValue;
+
+            return (void*)oldValue;
         }
     }
     return NULL; /*Does not find the pcKey */
