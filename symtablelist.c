@@ -141,9 +141,9 @@ void *SymTable_replace(SymTable_T oSymTable,
     {
         if(strcmp(pcKey,psCurrentNode->pcKey) == 0) {
             oldValue = psCurrentNode->pcKey;
-            psCurrentNode = pvValue;
+            psCurrentNode = psCurrentNode->pvValue;
 
-            return oldValue;
+            return (void*)oldValue;
         }
     }
     return NULL; /*Does not find the pcKey */
