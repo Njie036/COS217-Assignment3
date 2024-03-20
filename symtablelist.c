@@ -138,7 +138,6 @@ void *SymTable_replace(SymTable_T oSymTable,
         psCurrentNode = psNextNode)
     {
       psNextNode = psCurrentNode->psNextNode;
-      replace(psCurrentNode);
     }
 
     return NULL;
