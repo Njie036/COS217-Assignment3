@@ -143,7 +143,7 @@ void *SymTable_replace(SymTable_T oSymTable,
             oldValue = psCurrentNode->pcKey;
             psCurrentNode = pvValue;
 
-            return (void*)oldValue;
+            return oldValue;
         }
     }
     return NULL; /*Does not find the pcKey */
