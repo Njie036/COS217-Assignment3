@@ -113,7 +113,7 @@ int SymTable_put(SymTable_T oSymTable,
     }
 
     /*We have a space and should copy the key and value and insert the new node*/
-    psNewNode->pcKey = strcpy(psNewNode->pcKey, pcKey);
+    psNewNode->pcKey = strcpy((char*)psNewNode->pcKey, pcKey);
     psNewNode->pvValue = pvValue;
 
     psNewNode = oSymTable->psFirstNode;
@@ -141,8 +141,8 @@ void *SymTable_replace(SymTable_T oSymTable,
       replace(psCurrentNode);
     }
 
-    replace(oSymTable);
-}
+    return NULL;
+}  
 
 
 /*--------------------------------------------------------------------*/
@@ -211,7 +211,7 @@ void *SymTable_remove(SymTable_T oSymTable, const char *pcKey) {
             free((char*)psCurrentNode->pcKey); 
             free(psCurrentNode);
             oSymTable->numBindings--;
-            return value;
+            return (void*)value;
         }
         psPrevNode = psCurrentNode;
     }
