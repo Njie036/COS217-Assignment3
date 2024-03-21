@@ -127,7 +127,7 @@ int SymTable_put(SymTable_T oSymTable,
     assert(oSymTable != NULL);
     assert(pcKey != NULL);
 
-    hashIndex = 0;
+    hashIndex = SymTable_hash(pcKey, oSymTable->numOfLinkedlists);
 
     /*Searching for duplicate key*/
     for (psCurrentNode = oSymTable->psFirstNode[hashIndex];
