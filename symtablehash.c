@@ -150,7 +150,7 @@ int SymTable_put(SymTable_T oSymTable,
     psNewNode->pvValue = pvValue;
 
     psNewNode->psNextNode = oSymTable->psFirstNode[index];
-    oSymTable->psFirstNode = psNewNode;
+    oSymTable->psFirstNode[index] = psNewNode;
     oSymTable->numBindings++;
     return 1; /*Successfully inserted a new node*/
 }
@@ -246,7 +246,7 @@ void *SymTable_remove(SymTable_T oSymTable, const char *pcKey) {
             /*We found the key to remove*/
             value = psCurrentNode->pvValue;
             if (psPrevNode == NULL) {
-                oSymTable->psFirstNode = psCurrentNode->psNextNode;
+                oSymTable->psFirstNode[hashIndex] = psCurrentNode->psNextNode;
             }
             else {
                 psPrevNode->psNextNode = psCurrentNode->psNextNode;
