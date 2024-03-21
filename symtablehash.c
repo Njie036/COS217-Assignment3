@@ -122,13 +122,13 @@ int SymTable_put(SymTable_T oSymTable,
      const char *pcKey, const void *pvValue) {
     struct SymTableNode *psCurrentNode;
     struct SymTableNode *psNewNode;
-    size_t index;
+    size_t hashIndex;
 
     assert(oSymTable != NULL);
     assert(pcKey != NULL);
 
     /*Searching for duplicate key*/
-    for (psCurrentNode = oSymTable->psFirstNode[index];
+    for (psCurrentNode = oSymTable->psFirstNode[hashIndex];
         psCurrentNode != NULL;
         psCurrentNode =psCurrentNode->psNextNode)
     {
@@ -149,8 +149,8 @@ int SymTable_put(SymTable_T oSymTable,
     psNewNode->pcKey = strcpy((char*)psNewNode->pcKey, pcKey);
     psNewNode->pvValue = pvValue;
 
-    psNewNode->psNextNode = oSymTable->psFirstNode[index];
-    oSymTable->psFirstNode[index] = psNewNode;
+    psNewNode->psNextNode = oSymTable->psFirstNode[hashIndex];
+    oSymTable->psFirstNode[hashIndex] = psNewNode;
     oSymTable->numBindings++;
     return 1; /*Successfully inserted a new node*/
 }
@@ -163,13 +163,15 @@ void *SymTable_replace(SymTable_T oSymTable,
      const char *pcKey, const void *pvValue) { 
     struct SymTableNode *psCurrentNode;
     const void *oldValue;
-    size_t index;
+    size_t hashIndex;
 
 
     assert(oSymTable != NULL);
     assert(pcKey != NULL);
 
-    for (psCurrentNode = oSymTable->psFirstNode[index];
+    hashIndex = 0;
+
+    for (psCurrentNode = oSymTable->psFirstNode[hashIndex];
         psCurrentNode != NULL;
         psCurrentNode =psCurrentNode->psNextNode)
     {
@@ -192,6 +194,8 @@ int SymTable_contains(SymTable_T oSymTable, const char *pcKey) {
     assert(oSymTable != NULL);
     assert(pcKey != NULL);
 
+    hashIndex = 0;
+
     hashIndex = SymTable_hash(pcKey, oSymTable->numOfLinkedlists);
 
     for (psCurrentNode = oSymTable->psFirstNode[hashIndex];
@@ -212,6 +216,8 @@ void *SymTable_get(SymTable_T oSymTable, const char *pcKey) {
 
     assert(oSymTable != NULL);
     assert(pcKey != NULL);
+
+    hashIndex = 0;
 
     for (psCurrentNode = oSymTable->psFirstNode[hashIndex];
         psCurrentNode != NULL;
@@ -236,6 +242,8 @@ void *SymTable_remove(SymTable_T oSymTable, const char *pcKey) {
     assert(oSymTable != NULL);
     assert(pcKey != NULL);
     psPrevNode = NULL;
+
+    hashIndex = 0;
 
     /*Searching for key to remove*/
     for (psCurrentNode = oSymTable->psFirstNode[hashIndex];
@@ -271,6 +279,7 @@ void SymTable_map(SymTable_T oSymTable,
    struct SymTableNode *psCurrentNode;
    size_t hashIndex;
 
+   hashIndex = 0;
    assert(oSymTable != NULL);
    assert(pfApply != NULL);
 
