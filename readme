@@ -46,6 +46,30 @@ disagreements with them? Copy the splint warnings here, and express your
 disagreement after each warning. If there are no warnings, then write
 "None."
 
+Splint 3.1.2 --- 20 Aug 2022
+
+testsymtable.c: (in function testLargeTable)
+testsymtable.c:823:7: Buffer overflow possible with sprintf.  Recommend using
+                         snprintf instead: sprintf
+  Use of function that may lead to buffer overflow. (Use -bufferoverflowhigh to
+  inhibit warning)
+testsymtable.c:840:7: Buffer overflow possible with sprintf.  Recommend using
+                         snprintf instead: sprintf
+testsymtable.c:846:7: Buffer overflow possible with sprintf.  Recommend using
+                         snprintf instead: sprintf
+testsymtable.c:855:7: Buffer overflow possible with sprintf.  Recommend using
+                         snprintf instead: sprintf
+testsymtable.c:867:7: Buffer overflow possible with sprintf.  Recommend using
+                         snprintf instead: sprintf
+testsymtable.c:877:7: Buffer overflow possible with sprintf.  Recommend using
+                         snprintf instead: sprintf
+testsymtable.c:890:7: Buffer overflow possible with sprintf.  Recommend using
+                         snprintf instead: sprintf
+
+Finished checking --- 7 code warnings
+
+The warning are from the testsymtable and not my code.
+
 
 
 ------------------------------------------------------------------------
@@ -53,6 +77,17 @@ What warnings does critTer generate on symtablelist.c, and what are your
 disagreements with them? Copy the critTer warnings here, and express
 your disagreement after each warning. If there are no warnings, then
 write "None."
+
+symtablelist.c: line 90: medium priority:
+   Do you want to validate 'pvValue' through an assert?
+
+   symtablelist.c: line 130: medium priority:
+   Do you want to validate 'pvValue' through an assert?
+
+   symtablelist.c: line 231: medium priority:
+   Do you want to validate 'pvExtra' through an assert?
+
+I disagree because pvValue and pvExtra can be null.
 
 
 
@@ -79,10 +114,10 @@ implementation, (2) your non-expanding hash table implementation, and
 (3) your expanding hash table implementation? Fill in the blanks.
 
 The linked list implementation with:
--- 50 bindings consumed ________ seconds.
--- 500 bindings consumed ________ seconds.
--- 5000 bindings consumed ________ seconds.
--- 50000 bindings consumed ________ seconds.
+-- 50 bindings consumed 0 seconds.
+-- 500 bindings consumed 0.000675 seconds.
+-- 5000 bindings consumed 1.104579 seconds.
+-- 50000 bindings consumed 110.210813 seconds.
 -- 500000 bindings consumed ________ seconds.
 
 The non-expanding hash table implementation with:

@@ -35,7 +35,7 @@ size_t SymTable_getLength(SymTable_T oSymTable);
 /*--------------------------------------------------------------------*/
 
 /* Adds a new binding to oSymTable consisting of key pcKey and value 
-pcValue and return 1 (TRUE). Otherwise the function leaves oSymTable 
+pvValue and return 1 (TRUE). Otherwise the function leaves oSymTable 
 unchanged and return 0(FALSE). Leave oSymTable unchanged if insufficient 
 memory and return 0. */
 
