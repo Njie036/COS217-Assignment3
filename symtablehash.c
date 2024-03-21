@@ -195,8 +195,8 @@ int SymTable_contains(SymTable_T oSymTable, const char *pcKey) {
 
     assert(oSymTable != NULL);
     assert(pcKey != NULL);
-
-    hashIndex = 0;
+    
+    /*  assert(psCurrentNode->pcValue != NULL);*/
 
     hashIndex = SymTable_hash(pcKey, oSymTable->numOfLinkedlists);
 
