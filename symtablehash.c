@@ -207,7 +207,6 @@ int SymTable_contains(SymTable_T oSymTable, const char *pcKey) {
         if(strcmp(pcKey,psCurrentNode->pcKey) == 0) return 1;
     }
     return 0; /*Does not find the pcKey */
-
 }
 
 /*--------------------------------------------------------------------*/
@@ -229,8 +228,7 @@ void *SymTable_get(SymTable_T oSymTable, const char *pcKey) {
             return (void*)psCurrentNode -> pvValue;
         }
     }
-    return NULL; /*Does not find the pcKey */
-    
+    return NULL; /*Does not find the pcKey */    
 }
 
 /*--------------------------------------------------------------------*/
@@ -269,7 +267,6 @@ void *SymTable_remove(SymTable_T oSymTable, const char *pcKey) {
         psPrevNode = psCurrentNode;
     }
     return NULL; 
-
 }
 
 /*--------------------------------------------------------------------*/
@@ -289,6 +286,5 @@ void SymTable_map(SymTable_T oSymTable,
         psCurrentNode != NULL;
         psCurrentNode = psCurrentNode->psNextNode)
       (*pfApply)(psCurrentNode->pcKey, (void*)psCurrentNode->pvValue, (void*)pvExtra);
-
    }
 }
