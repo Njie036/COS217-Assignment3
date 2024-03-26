@@ -1,19 +1,26 @@
-/*--------------------------------------------------------------------*/
-/* symtablehash.c                                                     */
-/* Author: Ndongo Njie                                                */
+/*---------------------------------------------------------------------*/
+/* symtablehash.c                                                      */
+/* Author: Ndongo Njie                                                 */
 /* This file, symtablehash.c, implements symbol table using hash table.*/
-/*--------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 
 #include <assert.h>
 #include <stdlib.h>
 #include "symtable.h"
 #include <string.h>
 
-/*--------------------------------------------------------------------*/
-/*The sizes of the expanding hash table */
-static const size_t auBucketCounts[] = {509, 1021, 2039, 4093, 8191, 16381, 32749, 65521};
+/*---------------------------------------------------------------------*/
 
-static const size_t numBucketCounts = sizeof(auBucketCounts) / sizeof(auBucketCounts[0]);
+/*The sizes of the expanding hash table */
+static const size_t auBucketCounts[] = {509, 1021, 2039, 4093, 8191, 
+16381, 32749, 65521};
+
+/* Calculate the number of bucket counts */
+static const size_t numBucketCounts = (sizeof(auBucketCounts)) / 
+(sizeof(auBucketCounts[0]));
+
+
+/*---------------------------------------------------------------------*/
 
 /* Each item is stored in a SymTableNode.  SymTableNodes are linked to
    form a list.  */
@@ -30,7 +37,8 @@ struct SymTableNode
    struct SymTableNode *psNextNode;
 };
 
-/*--------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------*/
 
 /* A SymTable is a "dummy" node that points to the first SymTableNode. */
 
@@ -45,6 +53,8 @@ struct SymTable
    size_t numOfLinkedlists;
 };
 
+
+/*---------------------------------------------------------------------*/
 
 /* Return a hash code for pcKey that is between 0 and uBucketCount-1,
    inclusive. */
@@ -64,8 +74,15 @@ static size_t SymTable_hash(const char *pcKey, size_t uBucketCount)
 }
 
 
+/*---------------------------------------------------------------------*/
 
-static void resize(SymTable_T oSymTable) {
+/* The resize function is responsible for expanding the hash table. It
+accepts a symbol table, "oSymTable", as an argument. It increases the 
+size of the hash table to the next index specified in "auBucketCounts", 
+and then transfers all existing elements from the previous hash table 
+to the newly expanded one. This function does not return any value. */
+
+static void resizeIfNeeded(SymTable_T oSymTable) {
     size_t newSize = auBucketCounts[oSymTable->numOfLinkedlists];
     struct SymTableNode **newTable;
     size_t i;
@@ -75,6 +92,7 @@ static void resize(SymTable_T oSymTable) {
 
     assert(newTable != NULL);
 
+    /* Transfer existing elements to the new table */
     for (i = 0; i < oSymTable->numOfLinkedlists; i++) {
         struct SymTableNode *psCurrentNode = oSymTable->psFirstNode[i];
         while (psCurrentNode != NULL) {
@@ -86,14 +104,14 @@ static void resize(SymTable_T oSymTable) {
         }
     }
 
+    /* Free old hash table and update SymTable */
     free(oSymTable->psFirstNode);
     oSymTable->psFirstNode = newTable;
     oSymTable->numOfLinkedlists = newSize;
 }
 
 
-
-/*--------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 
 SymTable_T SymTable_new(void)
 {
@@ -103,17 +121,19 @@ SymTable_T SymTable_new(void)
    if (oSymTable == NULL)
       return NULL;
 
-   oSymTable->psFirstNode = calloc(auBucketCounts[0], sizeof(struct SymTableNode*));
+   oSymTable->psFirstNode = calloc(auBucketCounts[0], 
+   sizeof(struct SymTableNode*));
    if (oSymTable->psFirstNode == NULL) {
     free(oSymTable);
     return NULL;
    }
+
    oSymTable->numBindings = 0;
    oSymTable->numOfLinkedlists = auBucketCounts[0];
    return oSymTable;
 }
 
-/*--------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 
 void SymTable_free(SymTable_T oSymTable)
 {
@@ -123,18 +143,16 @@ void SymTable_free(SymTable_T oSymTable)
 
    assert(oSymTable != NULL);
 
-    for (index = 0; index < oSymTable->numOfLinkedlists; index++) {
+    for (index = 0; index < oSymTable->numOfLinkedlists; index++) 
         for (psCurrentNode = oSymTable->psFirstNode[index];
         psCurrentNode != NULL;
         psCurrentNode = psNextNode)
    {
       psNextNode = psCurrentNode->psNextNode;
-      /*Free where the key points to before freeing the main node */
+      /* Free where the key points to before freeing the main node */
       free((char*)psCurrentNode->pcKey); 
       free(psCurrentNode);
    }
-
-    }
     free(oSymTable->psFirstNode);
     free(oSymTable);
 }
@@ -161,22 +179,16 @@ int SymTable_put(SymTable_T oSymTable,
     assert(pcKey != NULL);
 
     hashIndex = SymTable_hash(pcKey, oSymTable->numOfLinkedlists);
-
-    /*
-    if (oSymTable->numBindings > auBucketCounts[oSymTable->numOfLinkedlists - 1] 
-    && oSymTable->numOfLinkedlists < numBucketCounts) { 
-        resize(oSymTable);
-    } 
-    */
     
-
+    /* Making sure we resize only when necessary */
     if (oSymTable != NULL &&
     oSymTable->numBindings > 0 &&
     oSymTable->numOfLinkedlists > 0 &&
     oSymTable->numOfLinkedlists < numBucketCounts &&
-    oSymTable->numBindings > auBucketCounts[oSymTable->numOfLinkedlists - 1]) {
-        resize(oSymTable);}
-
+    oSymTable->numBindings > auBucketCounts[oSymTable->
+    numOfLinkedlists - 1]) {
+        resizeIfNeeded(oSymTable);
+    }
 
     /*Searching for duplicate key*/
     for (psCurrentNode = oSymTable->psFirstNode[hashIndex];
@@ -196,7 +208,8 @@ int SymTable_put(SymTable_T oSymTable,
         return 0;
     }
 
-    /*We have a space and should copy the key and value and insert the new node*/
+    /*We have a space and should copy the key and value and insert the
+    new node*/
     psNewNode->pcKey = strcpy((char*)psNewNode->pcKey, pcKey);
     psNewNode->pvValue = pvValue;
 
@@ -207,9 +220,10 @@ int SymTable_put(SymTable_T oSymTable,
 }
 
 
-/*--------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 
-/*Similar to get but saves the old value, replaces it and returns the old value*/
+/*Similar to get but saves the old value, replaces it and returns the
+old value*/
 void *SymTable_replace(SymTable_T oSymTable,
      const char *pcKey, const void *pvValue) { 
     struct SymTableNode *psCurrentNode;
@@ -321,7 +335,8 @@ void *SymTable_remove(SymTable_T oSymTable, const char *pcKey) {
 /*--------------------------------------------------------------------*/
 
 void SymTable_map(SymTable_T oSymTable,
-               void (*pfApply)(const char *pcKey, void *pvValue, void *pvExtra),
+               void (*pfApply)(const char *pcKey, void *pvValue,
+                void *pvExtra),
                const void *pvExtra)
 {
    struct SymTableNode *psCurrentNode;
@@ -334,6 +349,7 @@ void SymTable_map(SymTable_T oSymTable,
     for (psCurrentNode = oSymTable->psFirstNode[index];
         psCurrentNode != NULL;
         psCurrentNode = psCurrentNode->psNextNode)
-      (*pfApply)(psCurrentNode->pcKey, (void*)psCurrentNode->pvValue, (void*)pvExtra);
+      (*pfApply)(psCurrentNode->pcKey, (void*)psCurrentNode->pvValue,
+       (void*)pvExtra);
    }
 }

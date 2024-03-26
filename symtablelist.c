@@ -69,7 +69,7 @@ void SymTable_free(SymTable_T oSymTable)
         psCurrentNode = psNextNode)
    {
       psNextNode = psCurrentNode->psNextNode;
-      /*Free where the key points to before freeing the main node */
+      /* Free where the key points to before freeing the main node */
       free((char*)psCurrentNode->pcKey); 
       free(psCurrentNode);
    }
@@ -103,7 +103,7 @@ int SymTable_put(SymTable_T oSymTable,
     {
         if(strcmp(pcKey,psCurrentNode->pcKey) == 0) return 0;
     }
-    /*It is not a duplicate, make space for the new node and key copy*/
+    /* It is not a duplicate, make space for the new node and key copy */
     psNewNode = (struct SymTableNode*)malloc(sizeof(struct SymTableNode));
     if (psNewNode == NULL)
       return 0;
@@ -114,7 +114,8 @@ int SymTable_put(SymTable_T oSymTable,
         return 0;
     }
 
-    /*We have a space and should copy the key and value and insert the new node*/
+    /* We have a space and should copy the key and value and insert the 
+    new node*/
     psNewNode->pcKey = strcpy((char*)psNewNode->pcKey, pcKey);
     psNewNode->pvValue = pvValue;
 
@@ -127,7 +128,8 @@ int SymTable_put(SymTable_T oSymTable,
 
 /*--------------------------------------------------------------------*/
 
-/*Similar to get but saves the old value, replaces and returns old value*/
+/*Similar to get but saves the old value, replaces and returns old 
+value*/
 void *SymTable_replace(SymTable_T oSymTable,
      const char *pcKey, const void *pvValue) { 
     struct SymTableNode *psCurrentNode;
@@ -225,8 +227,8 @@ void *SymTable_remove(SymTable_T oSymTable, const char *pcKey) {
 /*--------------------------------------------------------------------*/
 
 void SymTable_map(SymTable_T oSymTable,
-               void (*pfApply)(const char *pcKey, void *pvValue, void *pvExtra),
-               const void *pvExtra)
+               void (*pfApply)(const char *pcKey, void *pvValue, 
+               void *pvExtra), const void *pvExtra)
 {
    struct SymTableNode *psCurrentNode;
 
@@ -236,5 +238,6 @@ void SymTable_map(SymTable_T oSymTable,
    for (psCurrentNode = oSymTable->psFirstNode;
         psCurrentNode != NULL;
         psCurrentNode = psCurrentNode->psNextNode)
-      (*pfApply)(psCurrentNode->pcKey, (void*)psCurrentNode->pvValue, (void*)pvExtra);
+      (*pfApply)(psCurrentNode->pcKey, (void*)psCurrentNode->pvValue, 
+      (void*)pvExtra);
 }
