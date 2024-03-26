@@ -158,9 +158,9 @@ int SymTable_put(SymTable_T oSymTable,
             free(psNewNode);
             return 0;
         }
-        
+        size_t i;
         /* Rehash existing elements to the new table */
-        for (size_t i = 0; i < oSymTable->numOfLinkedlists; i++) {
+        for (i = 0; i < oSymTable->numOfLinkedlists; i++) {
             psCurrentNode = oSymTable->psFirstNode[i];
             while (psCurrentNode != NULL) {
                 struct SymTableNode *nextNode = psCurrentNode->psNextNode;
