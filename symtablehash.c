@@ -6,7 +6,7 @@
 
 
 
-
+#include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
 #include "symtable.h"
@@ -64,6 +64,39 @@ static size_t SymTable_hash(const char *pcKey, size_t uBucketCount)
 
    return uHash % uBucketCount;
 }
+
+
+
+
+/* Resize function */
+static void resize(SymTable_T oSymTable) {
+    size_t newSize = auBucketCounts[oSymTable->numOfLinkedlists];
+    struct SymTableNode **newTable = calloc(newSize, sizeof(struct SymTableNode*));
+    if (newTable == NULL) {
+        /* Memory allocation failed */
+        fprintf(stderr, "Error: Memory allocation failed during resize\n");
+        exit(EXIT_FAILURE);
+    }
+
+    /* Rehash existing elements to the new table */
+    for (size_t i = 0; i < oSymTable->numOfLinkedlists; i++) {
+        struct SymTableNode *psCurrentNode = oSymTable->psFirstNode[i];
+        while (psCurrentNode != NULL) {
+            struct SymTableNode *nextNode = psCurrentNode->psNextNode;
+            size_t newIndex = SymTable_hash(psCurrentNode->pcKey, newSize);
+            psCurrentNode->psNextNode = newTable[newIndex];
+            newTable[newIndex] = psCurrentNode;
+            psCurrentNode = nextNode;
+        }
+    }
+
+    /* Free old table and update SymTable object */
+    free(oSymTable->psFirstNode);
+    oSymTable->psFirstNode = newTable;
+    oSymTable->numOfLinkedlists = newSize;
+}
+
+
 
 /*--------------------------------------------------------------------*/
 
@@ -125,6 +158,12 @@ int SymTable_put(SymTable_T oSymTable,
 
     hashIndex = SymTable_hash(pcKey, oSymTable->numOfLinkedlists);
 
+    if (oSymTable->numBindings > auBucketCounts[oSymTable->numOfLinkedlists - 1] 
+    && oSymTable->numOfLinkedlists < numBucketCounts) {
+        /* Call the resize function */
+        resize(oSymTable);
+    }
+
     /* Searching for duplicate key */
     for (psCurrentNode = oSymTable->psFirstNode[hashIndex];
         psCurrentNode != NULL;
@@ -152,34 +191,6 @@ int SymTable_put(SymTable_T oSymTable,
     oSymTable->psFirstNode[hashIndex] = psNewNode;
     oSymTable->numBindings++;
 
-    /* Check if we need to resize */
-    if (oSymTable->numBindings > auBucketCounts[oSymTable->numOfLinkedlists - 1] && oSymTable->numOfLinkedlists < numBucketCounts) {
-        size_t newSize = auBucketCounts[oSymTable->numOfLinkedlists];
-        struct SymTableNode **newTable = calloc(newSize, sizeof(struct SymTableNode*));
-        if (newTable == NULL) {
-            /* Memory allocation failed, rollback insertion */
-            free(psNewNode->pcKey);
-            free(psNewNode);
-            return 0;
-        }
-        
-        /* Rehash existing elements to the new table */
-        for (i = 0; i < oSymTable->numOfLinkedlists; i++) {
-            psCurrentNode = oSymTable->psFirstNode[i];
-            while (psCurrentNode != NULL) {
-                struct SymTableNode *nextNode = psCurrentNode->psNextNode;
-                size_t newIndex = SymTable_hash(psCurrentNode->pcKey, newSize);
-                psCurrentNode->psNextNode = newTable[newIndex];
-                newTable[newIndex] = psCurrentNode;
-                psCurrentNode = nextNode;
-            }
-        }
-        
-        /* Free old table and update SymTable object */
-        free(oSymTable->psFirstNode);
-        oSymTable->psFirstNode = newTable;
-        oSymTable->numOfLinkedlists = newSize;
-    }
 
     return 1; /* Successfully inserted a new node */
 }
