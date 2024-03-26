@@ -119,7 +119,7 @@ static int SymTable_resize(SymTable_T oSymTable)
       /* Cannot resize further, already at maximum size */
       return 0;
    }
-   size_t newBucketCount =(size_t) auBucketCounts[newBucketIndex];
+   size_t newBucketCount =auBucketCounts[newBucketIndex];
    struct SymTableNode **newFirstNode = calloc(newBucketCount, sizeof(struct SymTableNode*));
    if (newFirstNode == NULL) {
       return 0; /* Allocation failed */
