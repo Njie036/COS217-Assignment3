@@ -162,10 +162,21 @@ int SymTable_put(SymTable_T oSymTable,
 
     hashIndex = SymTable_hash(pcKey, oSymTable->numOfLinkedlists);
 
+    /*
     if (oSymTable->numBindings > auBucketCounts[oSymTable->numOfLinkedlists - 1] 
     && oSymTable->numOfLinkedlists < numBucketCounts) { 
         resize(oSymTable);
     } 
+    */
+    
+
+    if (oSymTable != NULL &&
+    oSymTable->numBindings > 0 &&
+    oSymTable->numOfLinkedlists > 0 &&
+    oSymTable->numOfLinkedlists < numBucketCounts &&
+    oSymTable->numBindings > auBucketCounts[oSymTable->numOfLinkedlists - 1]) {
+        resize(oSymTable);}
+
 
     /*Searching for duplicate key*/
     for (psCurrentNode = oSymTable->psFirstNode[hashIndex];
