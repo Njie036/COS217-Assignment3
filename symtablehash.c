@@ -78,8 +78,10 @@ static void resize(SymTable_T oSymTable) {
         exit(EXIT_FAILURE);
     }
 
+    size_t i;
+
     /* Rehash existing elements to the new table */
-    for (size_t i = 0; i < oSymTable->numOfLinkedlists; i++) {
+    for (i = 0; i < oSymTable->numOfLinkedlists; i++) {
         struct SymTableNode *psCurrentNode = oSymTable->psFirstNode[i];
         while (psCurrentNode != NULL) {
             struct SymTableNode *nextNode = psCurrentNode->psNextNode;
@@ -151,7 +153,6 @@ int SymTable_put(SymTable_T oSymTable,
     struct SymTableNode *psCurrentNode;
     struct SymTableNode *psNewNode;
     size_t hashIndex;
-    size_t i;
 
     assert(oSymTable != NULL);
     assert(pcKey != NULL);
