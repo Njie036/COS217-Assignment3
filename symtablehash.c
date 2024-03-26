@@ -165,7 +165,7 @@ static int Resize_if_needed(SymTable_T oSymTable) {
         oSymTable->numOfLinkedlists = newBucketCount;
     }
 
-    return 1; /* Successfully resized not needed */
+    return 1;  Successfully resized not needed */
 
 
 /*--------------------------------------------------------------------*/
