@@ -173,7 +173,7 @@ int SymTable_put(SymTable_T oSymTable,
         }
         
         /* Free old table and update SymTable object */
-        free(oSymTable->psFirstNode);
+        free((const*)(oSymTable->psFirstNode));
         oSymTable->psFirstNode = newTable;
         oSymTable->numOfLinkedlists = newSize;
     }
