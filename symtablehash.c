@@ -15,8 +15,6 @@ static const size_t auBucketCounts[] = {509, 1021, 2039, 4093, 8191, 16381, 3274
 
 static const size_t numBucketCounts = sizeof(auBucketCounts) / sizeof(auBucketCounts[0]);
 
-/* static const size_t numBucketCounts = sizeof(auBucketCounts) / sizeof(auBucketCounts[0]); */
-
 /* Each item is stored in a SymTableNode.  SymTableNodes are linked to
    form a list.  */
 
@@ -76,7 +74,7 @@ static void resize(SymTable_T oSymTable) {
 
     newTable = calloc(newSize, sizeof(struct SymTableNode*));
 
-    assert(newTable == NULL);
+    assert(newTable != NULL);
 
     for (i = 0; i < oSymTable->numOfLinkedlists; i++) {
         struct SymTableNode *psCurrentNode = oSymTable->psFirstNode[i];
