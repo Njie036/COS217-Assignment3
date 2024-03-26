@@ -66,10 +66,11 @@ static size_t SymTable_hash(const char *pcKey, size_t uBucketCount)
 static int Resize_if_needed(SymTable_T oSymTable) {
     struct SymTableNode *psCurrentNode;
     struct SymTableNode *psNextNode;
+    size_t maxIndexOfHash;
     
     assert(oSymTable != NULL);
 
-    size_t maxIndexOfHash = (sizeof(auBucketCounts)) / (sizeof(auBucketCounts[0]) - 1);
+    maxIndexOfHash = (size_t)(sizeof(auBucketCounts)) / (sizeof(auBucketCounts[0]) - 1);
 
     if (oSymTable->numOfLinkedlists == auBucketCounts[maxIndexOfHash]) {
         return 0; 
