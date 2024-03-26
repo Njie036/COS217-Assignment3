@@ -73,10 +73,12 @@ static int Resize_if_needed(SymTable_T oSymTable) {
     
     assert(oSymTable != NULL);
 
+    /* Correct calculation of max index */
     maxIndexOfHash = (sizeof(auBucketCounts) / sizeof(auBucketCounts[0])) - 1;
 
+    /* Change condition to >= for resizing */
     if (oSymTable->numOfLinkedlists >= auBucketCounts[maxIndexOfHash]) {
-        return 0; 
+        return 0; /* Maximum size reached, cannot resize further */
     }
 
     newBucketIndex = 0;
@@ -89,7 +91,7 @@ static int Resize_if_needed(SymTable_T oSymTable) {
         struct SymTableNode **newTable = calloc(newBucketCount, sizeof(struct SymTableNode *));
         
         if (newTable == NULL) {
-            return 0; 
+            return 0; /* Memory allocation failed */
         }
 
         /* Transfer all elements into the new hash table */
@@ -110,8 +112,9 @@ static int Resize_if_needed(SymTable_T oSymTable) {
         oSymTable->numOfLinkedlists = newBucketCount;
     }
 
-    return 1; 
+    return 1; /* Successfully resized or no resizing needed */
 }
+
 
 
 
