@@ -115,6 +115,7 @@ int SymTable_put(SymTable_T oSymTable,
     struct SymTableNode *psCurrentNode;
     struct SymTableNode *psNewNode;
     size_t hashIndex;
+    size_t i;
 
     assert(oSymTable != NULL);
     assert(pcKey != NULL);
@@ -158,7 +159,7 @@ int SymTable_put(SymTable_T oSymTable,
             free(psNewNode);
             return 0;
         }
-        size_t i;
+        
         /* Rehash existing elements to the new table */
         for (i = 0; i < oSymTable->numOfLinkedlists; i++) {
             psCurrentNode = oSymTable->psFirstNode[i];
@@ -179,6 +180,7 @@ int SymTable_put(SymTable_T oSymTable,
 
     return 1; /* Successfully inserted a new node */
 }
+
 
 /*--------------------------------------------------------------------*/
 
