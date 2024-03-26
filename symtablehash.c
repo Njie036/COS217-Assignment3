@@ -13,6 +13,8 @@
 /*The sizes of the expanding hash table */
 static const size_t auBucketCounts[] = {509, 1021, 2039, 4093, 8191, 16381, 32749, 65521};
 
+static const size_t numBucketCounts = sizeof(auBucketCounts) / sizeof(auBucketCounts[0]);
+
 /* static const size_t numBucketCounts = sizeof(auBucketCounts) / sizeof(auBucketCounts[0]); */
 
 /* Each item is stored in a SymTableNode.  SymTableNodes are linked to
@@ -65,27 +67,25 @@ static size_t SymTable_hash(const char *pcKey, size_t uBucketCount)
 
 
 
-/* 
-
 static void resize(SymTable_T oSymTable) {
     size_t newSize = auBucketCounts[oSymTable->numOfLinkedlists];
-    struct SymTableNode **newTable = calloc(newSize, sizeof(struct SymTableNode*));
+    struct SymTableNode *psNextNode;
+    struct SymTableNode **newTable;
     size_t i;
-    
-    if (newTable == NULL) {
-        fprintf(stderr, "Error: Memory allocation failed during resize\n");
-        exit(EXIT_FAILURE);
-    }
+    size_t newIndex;
 
+    newTable = calloc(newSize, sizeof(struct SymTableNode*));
+
+    assert(newTable == NULL);
 
     for (i = 0; i < oSymTable->numOfLinkedlists; i++) {
         struct SymTableNode *psCurrentNode = oSymTable->psFirstNode[i];
         while (psCurrentNode != NULL) {
-            struct SymTableNode *nextNode = psCurrentNode->psNextNode;
-            size_t newIndex = SymTable_hash(psCurrentNode->pcKey, newSize);
+            psNextNode = psCurrentNode->psNextNode;
+            newIndex = SymTable_hash(psCurrentNode->pcKey, newSize);
             psCurrentNode->psNextNode = newTable[newIndex];
             newTable[newIndex] = psCurrentNode;
-            psCurrentNode = nextNode;
+            psCurrentNode = psNextNode;
         }
     }
 
@@ -94,7 +94,7 @@ static void resize(SymTable_T oSymTable) {
     oSymTable->numOfLinkedlists = newSize;
 }
 
-*/
+
 
 /*--------------------------------------------------------------------*/
 
@@ -165,12 +165,10 @@ int SymTable_put(SymTable_T oSymTable,
 
     hashIndex = SymTable_hash(pcKey, oSymTable->numOfLinkedlists);
 
-    /*
     if (oSymTable->numBindings > auBucketCounts[oSymTable->numOfLinkedlists - 1] 
     && oSymTable->numOfLinkedlists < numBucketCounts) { 
         resize(oSymTable);
     } 
-    */ 
 
     /*Searching for duplicate key*/
     for (psCurrentNode = oSymTable->psFirstNode[hashIndex];
