@@ -72,7 +72,7 @@ static void resize(SymTable_T oSymTable) {
     size_t i;
     size_t newIndex;
 
-    newTable = calloc(newSize, sizeof(struct SymTableNode*));
+    newTable = calloc(newSize, sizeof(struct SymTableNode *));
 
     assert(newTable != NULL);
 
