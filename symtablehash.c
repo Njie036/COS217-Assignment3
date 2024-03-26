@@ -62,6 +62,7 @@ static size_t SymTable_hash(const char *pcKey, size_t uBucketCount)
 }
 
 
+/* Resize the symbol table if necessary */
 static int Resize_if_needed(SymTable_T oSymTable) {
     struct SymTableNode *psCurrentNode;
     struct SymTableNode *psNextNode;
@@ -109,63 +110,9 @@ static int Resize_if_needed(SymTable_T oSymTable) {
         oSymTable->numOfLinkedlists = newBucketCount;
     }
 
-    return 1; /* Successfully resized or no resizing needed */
+    return 1; 
 }
 
-
-
-
-
-/* Resize the symbol table if necessary 
-static int Resize_if_needed(SymTable_T oSymTable) {
-    struct SymTableNode *psCurrentNode;
-    struct SymTableNode *psNextNode;
-    size_t maxIndexOfHash;
-    size_t newBucketIndex;
-    size_t i;
-    size_t newIndex;
-    
-    assert(oSymTable != NULL);
-
-    maxIndexOfHash = (size_t)(sizeof(auBucketCounts)) / (sizeof(auBucketCounts[0]) - 1);
-
-    if (oSymTable->numOfLinkedlists == auBucketCounts[maxIndexOfHash]) {
-        return 0; 
-    }
-
-    newBucketIndex = 0;
-    while ((newBucketIndex < maxIndexOfHash) && (auBucketCounts[newBucketIndex]
-     <= oSymTable->numOfLinkedlists)) {
-        newBucketIndex++;
-    }
-
-    if (newBucketIndex < maxIndexOfHash) {
-        size_t newBucketCount = auBucketCounts[newBucketIndex];
-        struct SymTableNode **newTable = calloc(newBucketCount, sizeof(struct SymTableNode *));
-        
-        if (newTable == NULL) {
-            return 0; 
-        }
-
-        Transfer all elements into the new hash table 
-        for (i = 0; i < oSymTable->numOfLinkedlists; i++) {
-            psCurrentNode = oSymTable->psFirstNode[i];
-            while (psCurrentNode != NULL) {
-                psNextNode = psCurrentNode->psNextNode;
-                
-                newIndex = SymTable_hash(psCurrentNode->pcKey, newBucketCount);
-                psCurrentNode->psNextNode = newTable[newIndex];
-                newTable[newIndex] = psCurrentNode;
-                psCurrentNode = psNextNode;
-            }
-        }
-
-        free(oSymTable->psFirstNode);
-        oSymTable->psFirstNode = newTable;
-        oSymTable->numOfLinkedlists = newBucketCount;
-    }
-
-    return 1;  Successfully resized not needed */
 
 
 /*--------------------------------------------------------------------*/
