@@ -115,17 +115,20 @@ void SymTable_free(SymTable_T oSymTable)
 static int SymTable_resize(SymTable_T oSymTable)
 {
    size_t newBucketIndex = oSymTable->bucketIndex + 1;
+   size_t newBucketCount;
+   struct SymTableNode **newFirstNode;
+   size_t i;
+
    if (newBucketIndex >= sizeof(auBucketCounts) / sizeof(auBucketCounts[0])) {
       /* Cannot resize further, already at maximum size */
       return 0;
    }
-   size_t newBucketCount =auBucketCounts[newBucketIndex];
-   struct SymTableNode **newFirstNode = calloc(newBucketCount, sizeof(struct SymTableNode*));
+   newBucketCount = auBucketCounts[newBucketIndex];
+   newFirstNode = calloc(newBucketCount, sizeof(struct SymTableNode*));
    if (newFirstNode == NULL) {
       return 0; /* Allocation failed */
    }
 
-   size_t i;
    /* Rehash existing elements */
    for (i = 0; i < oSymTable->numOfLinkedlists; i++) {
       struct SymTableNode *currentNode = oSymTable->psFirstNode[i];
@@ -139,12 +142,12 @@ static int SymTable_resize(SymTable_T oSymTable)
    }
    /* Free old table */
    free(oSymTable->psFirstNode);
-   /* Update SymTable with new table and count */
    oSymTable->psFirstNode = newFirstNode;
    oSymTable->numOfLinkedlists = newBucketCount;
    oSymTable->bucketIndex = newBucketIndex;
    return 1;
 }
+
 
 /*--------------------------------------------------------------------*/
 
