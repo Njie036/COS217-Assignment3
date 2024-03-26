@@ -72,13 +72,14 @@ static size_t SymTable_hash(const char *pcKey, size_t uBucketCount)
 static void resize(SymTable_T oSymTable) {
     size_t newSize = auBucketCounts[oSymTable->numOfLinkedlists];
     struct SymTableNode **newTable = calloc(newSize, sizeof(struct SymTableNode*));
+    size_t i;
+    
     if (newTable == NULL) {
         /* Memory allocation failed */
         fprintf(stderr, "Error: Memory allocation failed during resize\n");
         exit(EXIT_FAILURE);
     }
 
-    size_t i;
 
     /* Rehash existing elements to the new table */
     for (i = 0; i < oSymTable->numOfLinkedlists; i++) {
