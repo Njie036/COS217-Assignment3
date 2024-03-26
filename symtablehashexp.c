@@ -4,12 +4,7 @@
 /* This file, symtablehash.c, implements symbol table using hash table.*/
 /*--------------------------------------------------------------------*/
 
-/*--------------------------------------------------------------------*/
-/* symtablehash.c                                                     */
-/* Author: Ndongo Njie                                                */
-/* This file, symtablehash.c, implements symbol table using hash table.*/
-/*--------------------------------------------------------------------*/
-
+#include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
 #include "symtable.h"
@@ -18,6 +13,7 @@
 /*--------------------------------------------------------------------*/
 /*The sizes of the expanding hash table */
 static const size_t auBucketCounts[] = {509, 1021, 2039, 4093, 8191, 16381, 32749, 65521};
+static const size_t numBucketCounts = sizeof(auBucketCounts) / sizeof(auBucketCounts[0]);
 
 /* Each item is stored in a SymTableNode.  SymTableNodes are linked to
    form a list.  */
@@ -67,6 +63,42 @@ static size_t SymTable_hash(const char *pcKey, size_t uBucketCount)
    return uHash % uBucketCount;
 }
 
+
+
+
+/* Resize function */
+static void resize(SymTable_T oSymTable) {
+    size_t newSize = auBucketCounts[oSymTable->numOfLinkedlists];
+    struct SymTableNode **newTable = calloc(newSize, sizeof(struct SymTableNode*));
+    size_t i;
+
+    if (newTable == NULL) {
+        /* Memory allocation failed */
+        fprintf(stderr, "Error: Memory allocation failed during resize\n");
+        exit(EXIT_FAILURE);
+    }
+
+
+    /* Rehash existing elements to the new table */
+    for (i = 0; i < oSymTable->numOfLinkedlists; i++) {
+        struct SymTableNode *psCurrentNode = oSymTable->psFirstNode[i];
+        while (psCurrentNode != NULL) {
+            struct SymTableNode *nextNode = psCurrentNode->psNextNode;
+            size_t newIndex = SymTable_hash(psCurrentNode->pcKey, newSize);
+            psCurrentNode->psNextNode = newTable[newIndex];
+            newTable[newIndex] = psCurrentNode;
+            psCurrentNode = nextNode;
+        }
+    }
+
+    /* Free old table and update SymTable object */
+    free(oSymTable->psFirstNode);
+    oSymTable->psFirstNode = newTable;
+    oSymTable->numOfLinkedlists = newSize;
+}
+
+
+
 /*--------------------------------------------------------------------*/
 
 SymTable_T SymTable_new(void)
@@ -113,16 +145,6 @@ void SymTable_free(SymTable_T oSymTable)
     free(oSymTable);
 }
 
-
-/*--------------------------------------------------------------------*/
-
-size_t SymTable_getLength(SymTable_T oSymTable)
-{
-    assert(oSymTable != NULL);
-    return oSymTable->numBindings;
-}
-
-
 /*--------------------------------------------------------------------*/
 
 int SymTable_put(SymTable_T oSymTable,
@@ -136,40 +158,51 @@ int SymTable_put(SymTable_T oSymTable,
 
     hashIndex = SymTable_hash(pcKey, oSymTable->numOfLinkedlists);
 
-    /*Searching for duplicate key*/
+    if (oSymTable->numBindings > auBucketCounts[oSymTable->numOfLinkedlists - 1] 
+    && oSymTable->numOfLinkedlists < numBucketCounts) {
+        /* Call the resize function */
+        resize(oSymTable);
+    }
+
+    /* Searching for duplicate key */
     for (psCurrentNode = oSymTable->psFirstNode[hashIndex];
         psCurrentNode != NULL;
-        psCurrentNode =psCurrentNode->psNextNode)
+        psCurrentNode = psCurrentNode->psNextNode)
     {
-        if(strcmp(pcKey,psCurrentNode->pcKey) == 0) return 0;
+        if (strcmp(pcKey, psCurrentNode->pcKey) == 0) return 0;
     }
-    /*It is not a duplicate, make space for the new node and key copy*/
+
+    /* It is not a duplicate, make space for the new node and key copy */
     psNewNode = (struct SymTableNode*)malloc(sizeof(struct SymTableNode));
     if (psNewNode == NULL)
       return 0;
 
-    psNewNode->pcKey = malloc(strlen(pcKey)+1);
+    psNewNode->pcKey = malloc(strlen(pcKey) + 1);
     if (psNewNode->pcKey == NULL) {
         free(psNewNode);
         return 0;
     }
 
-    /*We have a space and should copy the key and value and insert the new node*/
+    /* We have a space and should copy the key and value and insert the new node */
     psNewNode->pcKey = strcpy((char*)psNewNode->pcKey, pcKey);
     psNewNode->pvValue = pvValue;
 
     psNewNode->psNextNode = oSymTable->psFirstNode[hashIndex];
     oSymTable->psFirstNode[hashIndex] = psNewNode;
     oSymTable->numBindings++;
-    return 1; /*Successfully inserted a new node*/
+
+
+    return 1; /* Successfully inserted a new node */
 }
+
 
 
 /*--------------------------------------------------------------------*/
 
-/*Similar to get but saves the old value, replaces it and returns the old value*/
+/* Similar to get but saves the old value, replaces it, and returns the old value */
 void *SymTable_replace(SymTable_T oSymTable,
-     const char *pcKey, const void *pvValue) { 
+     const char *
+pcKey, const void *pvValue) { 
     struct SymTableNode *psCurrentNode;
     const void *oldValue;
     size_t hashIndex;
@@ -185,14 +218,13 @@ void *SymTable_replace(SymTable_T oSymTable,
         psCurrentNode =psCurrentNode->psNextNode)
     {
         if(strcmp(pcKey,psCurrentNode->pcKey) == 0) {
-            oldValue = psCurrentNode-> pvValue;
+            oldValue = psCurrentNode->pvValue;
             psCurrentNode->pvValue = pvValue;
             return (void*)oldValue;
         }
     }
-    return NULL; /*Does not find the pcKey */
+    return NULL; /* Does not find the pcKey */
 }  
-
 
 /*--------------------------------------------------------------------*/
 
@@ -203,8 +235,6 @@ int SymTable_contains(SymTable_T oSymTable, const char *pcKey) {
     assert(oSymTable != NULL);
     assert(pcKey != NULL);
     
-    /*  assert(psCurrentNode->pcValue != NULL);*/
-
     hashIndex = SymTable_hash(pcKey, oSymTable->numOfLinkedlists);
 
     for (psCurrentNode = oSymTable->psFirstNode[hashIndex];
@@ -213,7 +243,7 @@ int SymTable_contains(SymTable_T oSymTable, const char *pcKey) {
     {
         if(strcmp(pcKey,psCurrentNode->pcKey) == 0) return 1;
     }
-    return 0; /*Does not find the pcKey */
+    return 0; /* Does not find the pcKey */
 }
 
 /*--------------------------------------------------------------------*/
@@ -235,7 +265,7 @@ void *SymTable_get(SymTable_T oSymTable, const char *pcKey) {
             return (void*)psCurrentNode -> pvValue;
         }
     }
-    return NULL; /*Does not find the pcKey */    
+    return NULL; /* Does not find the pcKey */  
 }
 
 /*--------------------------------------------------------------------*/
@@ -252,13 +282,13 @@ void *SymTable_remove(SymTable_T oSymTable, const char *pcKey) {
 
     hashIndex = SymTable_hash(pcKey, oSymTable->numOfLinkedlists);
 
-    /*Searching for key to remove*/
+    /* Searching for key to remove */
     for (psCurrentNode = oSymTable->psFirstNode[hashIndex];
         psCurrentNode != NULL;
         psCurrentNode = psCurrentNode->psNextNode)
     {   
         if(strcmp(pcKey,psCurrentNode->pcKey) == 0) {
-            /*We found the key to remove*/
+            /* We found the key to remove */
             value = psCurrentNode->pvValue;
             if (psPrevNode == NULL) {
                 oSymTable->psFirstNode[hashIndex] = psCurrentNode->psNextNode;
