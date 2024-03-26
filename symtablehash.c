@@ -82,7 +82,7 @@ size of the hash table to the next index specified in "auBucketCounts",
 and then transfers all existing elements from the previous hash table 
 to the newly expanded one. This function does not return any value. */
 
-static void resizeIfNeeded(SymTable_T oSymTable) {
+static void SymTable_resizeIfNeeded(SymTable_T oSymTable) {
     size_t newSize = auBucketCounts[oSymTable->numOfLinkedlists];
     struct SymTableNode **newTable;
     size_t i;
@@ -187,7 +187,7 @@ int SymTable_put(SymTable_T oSymTable,
     oSymTable->numOfLinkedlists < numBucketCounts &&
     oSymTable->numBindings > auBucketCounts[oSymTable->
     numOfLinkedlists - 1]) {
-        resizeIfNeeded(oSymTable);
+        SymTable_resizeIfNeeded(oSymTable);
     }
 
     /*Searching for duplicate key*/
