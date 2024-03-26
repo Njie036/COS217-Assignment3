@@ -67,6 +67,7 @@ static int Resize_if_needed(SymTable_T oSymTable) {
     struct SymTableNode *psCurrentNode;
     struct SymTableNode *psNextNode;
     size_t maxIndexOfHash;
+    size_t newBucketIndex;
     
     assert(oSymTable != NULL);
 
@@ -76,7 +77,7 @@ static int Resize_if_needed(SymTable_T oSymTable) {
         return 0; 
     }
 
-    size_t newBucketIndex = 0;
+    newBucketIndex = 0;
     while ((newBucketIndex < maxIndexOfHash) && (auBucketCounts[newBucketIndex]
      <= oSymTable->numOfLinkedlists)) {
         newBucketIndex++;
@@ -90,11 +91,13 @@ static int Resize_if_needed(SymTable_T oSymTable) {
             return 0; 
         }
 
+        size_t i;
+
         /* Transfer all elements into the new hash table */
-        for (size_t i = 0; i < oSymTable->numOfLinkedlists; i++) {
-            struct SymTableNode *psCurrentNode = oSymTable->psFirstNode[i];
+        for (i = 0; i < oSymTable->numOfLinkedlists; i++) {
+            psCurrentNode = oSymTable->psFirstNode[i];
             while (psCurrentNode != NULL) {
-                struct SymTableNode *psNextNode = psCurrentNode->psNextNode;
+                psNextNode = psCurrentNode->psNextNode;
                 size_t newIndex = SymTable_hash(psCurrentNode->pcKey, newBucketCount);
                 psCurrentNode->psNextNode = newTable[newIndex];
                 newTable[newIndex] = psCurrentNode;
@@ -179,9 +182,9 @@ int SymTable_put(SymTable_T oSymTable,
 
     hashIndex = SymTable_hash(pcKey, oSymTable->numOfLinkedlists);
 
-    // Check if resize is needed before insertion
+    /* Check if resize is needed before insertion */
     if (!Resize_if_needed(oSymTable)) {
-        return 0; // Maximum size reached, cannot insert further
+        return 0; /* Maximum size reached */
     }
 
     /*Searching for duplicate key*/
