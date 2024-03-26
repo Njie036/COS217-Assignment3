@@ -147,7 +147,7 @@ static int Resize_if_needed(SymTable_T oSymTable) {
             return 0; 
         }
 
-        /* Transfer all elements into the new hash table 
+        Transfer all elements into the new hash table 
         for (i = 0; i < oSymTable->numOfLinkedlists; i++) {
             psCurrentNode = oSymTable->psFirstNode[i];
             while (psCurrentNode != NULL) {
@@ -165,7 +165,7 @@ static int Resize_if_needed(SymTable_T oSymTable) {
         oSymTable->numOfLinkedlists = newBucketCount;
     }
 
-    return 1; /* Successfully resized not needed */ /* */
+    return 1; /* Successfully resized not needed */
 
 
 /*--------------------------------------------------------------------*/
