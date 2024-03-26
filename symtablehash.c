@@ -278,7 +278,8 @@ void *SymTable_get(SymTable_T oSymTable, const char *pcKey) {
    struct SymTableNode *psCurrentNode;
    size_t hashIndex;
 
-    assert(oSymTable != NULL);
+    if (oSymTable == NULL) return NULL;
+
     assert(pcKey != NULL);
 
    hashIndex = SymTable_hash(pcKey, oSymTable->numOfLinkedlists);
