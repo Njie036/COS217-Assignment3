@@ -67,7 +67,6 @@ static size_t SymTable_hash(const char *pcKey, size_t uBucketCount)
 
 static void resize(SymTable_T oSymTable) {
     size_t newSize = auBucketCounts[oSymTable->numOfLinkedlists];
-    struct SymTableNode *psNextNode;
     struct SymTableNode **newTable;
     size_t i;
     size_t newIndex;
@@ -79,7 +78,7 @@ static void resize(SymTable_T oSymTable) {
     for (i = 0; i < oSymTable->numOfLinkedlists; i++) {
         struct SymTableNode *psCurrentNode = oSymTable->psFirstNode[i];
         while (psCurrentNode != NULL) {
-            psNextNode = psCurrentNode->psNextNode;
+            struct SymTableNode *psNextNode = psCurrentNode->psNextNode;
             newIndex = SymTable_hash(psCurrentNode->pcKey, newSize);
             psCurrentNode->psNextNode = newTable[newIndex];
             newTable[newIndex] = psCurrentNode;
