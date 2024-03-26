@@ -12,6 +12,7 @@
 /*--------------------------------------------------------------------*/
 /*The sizes of the expanding hash table */
 static const size_t auBucketCounts[] = {509, 1021, 2039, 4093, 8191, 16381, 32749, 65521};
+static const size_t numBucketCounts = sizeof(auBucketCounts) / sizeof(auBucketCounts[0]);
 
 /* Each item is stored in a SymTableNode.  SymTableNodes are linked to
    form a list.  */
@@ -41,8 +42,6 @@ struct SymTable
    size_t numBindings;
    /*Number of linked lists in the hash table */
    size_t numOfLinkedlists;
-   /* Current bucket count index */
-   size_t bucketIndex;
 };
 
 
@@ -80,7 +79,6 @@ SymTable_T SymTable_new(void)
    }
    oSymTable->numBindings = 0;
    oSymTable->numOfLinkedlists = auBucketCounts[0];
-   oSymTable->bucketIndex = 0; /* Initialize bucket index */
    return oSymTable;
 }
 
@@ -100,54 +98,15 @@ void SymTable_free(SymTable_T oSymTable)
         psCurrentNode = psNextNode)
    {
       psNextNode = psCurrentNode->psNextNode;
-      /* Free where the key points to before freeing the main node */
+      /*Free where the key points to before freeing the main node */
       free((char*)psCurrentNode->pcKey); 
       free(psCurrentNode);
    }
+
     }
     free(oSymTable->psFirstNode);
     free(oSymTable);
 }
-
-/*--------------------------------------------------------------------*/
-
-/* Function to resize the hash table */
-static int SymTable_resize(SymTable_T oSymTable)
-{
-   size_t newBucketIndex = oSymTable->bucketIndex + 1;
-   size_t newBucketCount;
-   struct SymTableNode **newFirstNode;
-   size_t i;
-
-   if (newBucketIndex >= sizeof(auBucketCounts) / sizeof(auBucketCounts[0])) {
-      /* Cannot resize further, already at maximum size */
-      return 0;
-   }
-   newBucketCount = auBucketCounts[newBucketIndex];
-   newFirstNode = calloc(newBucketCount, sizeof(struct SymTableNode*));
-   if (newFirstNode == NULL) {
-      return 0; /* Allocation failed */
-   }
-
-   /* Rehash existing elements */
-   for (i = 0; i < oSymTable->numOfLinkedlists; i++) {
-      struct SymTableNode *currentNode = oSymTable->psFirstNode[i];
-      while (currentNode != NULL) {
-         struct SymTableNode *nextNode = currentNode->psNextNode;
-         size_t newIndex = SymTable_hash(currentNode->pcKey, newBucketCount);
-         currentNode->psNextNode = newFirstNode[newIndex];
-         newFirstNode[newIndex] = currentNode;
-         currentNode = nextNode;
-      }
-   }
-   /* Free old table */
-   free(oSymTable->psFirstNode);
-   oSymTable->psFirstNode = newFirstNode;
-   oSymTable->numOfLinkedlists = newBucketCount;
-   oSymTable->bucketIndex = newBucketIndex;
-   return 1;
-}
-
 
 /*--------------------------------------------------------------------*/
 
@@ -162,41 +121,62 @@ int SymTable_put(SymTable_T oSymTable,
 
     hashIndex = SymTable_hash(pcKey, oSymTable->numOfLinkedlists);
 
-    /* Check if resizing is necessary */
-    if (oSymTable->numBindings >= oSymTable->numOfLinkedlists) {
-       if (!SymTable_resize(oSymTable)) {
-          return 0; /* Resizing failed */
-       }
-       /* Recalculate hashIndex after resizing */
-       hashIndex = SymTable_hash(pcKey, oSymTable->numOfLinkedlists);
-    }
-
     /* Searching for duplicate key */
     for (psCurrentNode = oSymTable->psFirstNode[hashIndex];
         psCurrentNode != NULL;
-        psCurrentNode =psCurrentNode->psNextNode)
+        psCurrentNode = psCurrentNode->psNextNode)
     {
-        if(strcmp(pcKey,psCurrentNode->pcKey) == 0) return 0;
+        if (strcmp(pcKey, psCurrentNode->pcKey) == 0) return 0;
     }
+
     /* It is not a duplicate, make space for the new node and key copy */
     psNewNode = (struct SymTableNode*)malloc(sizeof(struct SymTableNode));
     if (psNewNode == NULL)
       return 0;
 
-    psNewNode->pcKey = malloc(strlen(pcKey)+1);
+    psNewNode->pcKey = malloc(strlen(pcKey) + 1);
     if (psNewNode->pcKey == NULL) {
         free(psNewNode);
         return 0;
     }
 
-    /* We have space and should copy the key and value and insert the new node */
+    /* We have a space and should copy the key and value and insert the new node */
     psNewNode->pcKey = strcpy((char*)psNewNode->pcKey, pcKey);
     psNewNode->pvValue = pvValue;
 
     psNewNode->psNextNode = oSymTable->psFirstNode[hashIndex];
-    /* SymTable now points to the new node */
     oSymTable->psFirstNode[hashIndex] = psNewNode;
     oSymTable->numBindings++;
+
+    /* Check if we need to resize */
+    if (oSymTable->numBindings > auBucketCounts[oSymTable->numOfLinkedlists - 1] && oSymTable->numOfLinkedlists < numBucketCounts) {
+        size_t newSize = auBucketCounts[oSymTable->numOfLinkedlists];
+        struct SymTableNode **newTable = calloc(newSize, sizeof(struct SymTableNode*));
+        if (newTable == NULL) {
+            /* Memory allocation failed, rollback insertion */
+            free(psNewNode->pcKey);
+            free(psNewNode);
+            return 0;
+        }
+        
+        /* Rehash existing elements to the new table */
+        for (size_t i = 0; i < oSymTable->numOfLinkedlists; i++) {
+            psCurrentNode = oSymTable->psFirstNode[i];
+            while (psCurrentNode != NULL) {
+                struct SymTableNode *nextNode = psCurrentNode->psNextNode;
+                size_t newIndex = SymTable_hash(psCurrentNode->pcKey, newSize);
+                psCurrentNode->psNextNode = newTable[newIndex];
+                newTable[newIndex] = psCurrentNode;
+                psCurrentNode = nextNode;
+            }
+        }
+        
+        /* Free old table and update SymTable object */
+        free(oSymTable->psFirstNode);
+        oSymTable->psFirstNode = newTable;
+        oSymTable->numOfLinkedlists = newSize;
+    }
+
     return 1; /* Successfully inserted a new node */
 }
 
