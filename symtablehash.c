@@ -21,7 +21,7 @@ struct SymTableNode
    /* The key */
    const char *pcKey;
 
-    /* The value */
+    /* The value*/
    const void *pvValue;
 
    /* The address of the next SymTableNode. */
@@ -60,63 +60,6 @@ static size_t SymTable_hash(const char *pcKey, size_t uBucketCount)
 
    return uHash % uBucketCount;
 }
-
-
-/* Resize the symbol table if necessary */
-static int Resize_if_needed(SymTable_T oSymTable) {
-    struct SymTableNode *psCurrentNode;
-    struct SymTableNode *psNextNode;
-    size_t maxIndexOfHash;
-    size_t newBucketIndex;
-    size_t i;
-    size_t newIndex;
-    
-    assert(oSymTable != NULL);
-
-    /* Correct calculation of max index */
-    maxIndexOfHash = (sizeof(auBucketCounts) / sizeof(auBucketCounts[0])) - 1;
-
-    /* Change condition to >= for resizing */
-    if (oSymTable->numOfLinkedlists >= auBucketCounts[maxIndexOfHash]) {
-        return 0; /* Maximum size reached, cannot resize further */
-    }
-
-    newBucketIndex = 0;
-    while ((newBucketIndex < maxIndexOfHash) && (auBucketCounts[newBucketIndex] <= oSymTable->numOfLinkedlists)) {
-        newBucketIndex++;
-    }
-
-    if (newBucketIndex < maxIndexOfHash) {
-        size_t newBucketCount = auBucketCounts[newBucketIndex];
-        struct SymTableNode **newTable = calloc(newBucketCount, sizeof(struct SymTableNode *));
-        
-        if (newTable == NULL) {
-            return 0; /* Memory allocation failed */
-        }
-
-        /* Transfer all elements into the new hash table */
-        for (i = 0; i < oSymTable->numOfLinkedlists; i++) {
-            psCurrentNode = oSymTable->psFirstNode[i];
-            while (psCurrentNode != NULL) {
-                psNextNode = psCurrentNode->psNextNode;
-                
-                newIndex = SymTable_hash(psCurrentNode->pcKey, newBucketCount);
-                psCurrentNode->psNextNode = newTable[newIndex];
-                newTable[newIndex] = psCurrentNode;
-                psCurrentNode = psNextNode;
-            }
-        }
-
-        free(oSymTable->psFirstNode);
-        oSymTable->psFirstNode = newTable;
-        oSymTable->numOfLinkedlists = newBucketCount;
-    }
-
-    return 1; /* Successfully resized or no resizing needed */
-}
-
-
-
 
 /*--------------------------------------------------------------------*/
 
@@ -186,11 +129,6 @@ int SymTable_put(SymTable_T oSymTable,
     assert(pcKey != NULL);
 
     hashIndex = SymTable_hash(pcKey, oSymTable->numOfLinkedlists);
-
-    /* Check if resize is needed before insertion */
-    if (!Resize_if_needed(oSymTable)) {
-        return 0; /* Maximum size reached */
-    }
 
     /*Searching for duplicate key*/
     for (psCurrentNode = oSymTable->psFirstNode[hashIndex];
@@ -278,8 +216,7 @@ void *SymTable_get(SymTable_T oSymTable, const char *pcKey) {
    struct SymTableNode *psCurrentNode;
    size_t hashIndex;
 
-    if (oSymTable == NULL) return NULL;
-
+    assert(oSymTable != NULL);
     assert(pcKey != NULL);
 
    hashIndex = SymTable_hash(pcKey, oSymTable->numOfLinkedlists);
