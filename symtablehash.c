@@ -119,13 +119,15 @@ static int SymTable_resize(SymTable_T oSymTable)
       /* Cannot resize further, already at maximum size */
       return 0;
    }
-   size_t newBucketCount = auBucketCounts[newBucketIndex];
+   size_t newBucketCount =(size_t) auBucketCounts[newBucketIndex];
    struct SymTableNode **newFirstNode = calloc(newBucketCount, sizeof(struct SymTableNode*));
    if (newFirstNode == NULL) {
       return 0; /* Allocation failed */
    }
+
+   size_t i;
    /* Rehash existing elements */
-   for (size_t i = 0; i < oSymTable->numOfLinkedlists; i++) {
+   for (i = 0; i < oSymTable->numOfLinkedlists; i++) {
       struct SymTableNode *currentNode = oSymTable->psFirstNode[i];
       while (currentNode != NULL) {
          struct SymTableNode *nextNode = currentNode->psNextNode;
